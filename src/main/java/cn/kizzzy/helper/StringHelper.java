@@ -1,7 +1,11 @@
 package cn.kizzzy.helper;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StringHelper extends HexHelper {
     
@@ -91,5 +95,24 @@ public class StringHelper extends HexHelper {
             return false;
         }
         return true;
+    }
+    
+    public static Map<String, String> parseCookie(String cookie) {
+        Map<String, String> kvs = new HashMap<>();
+        
+        if (StringHelper.isNotNullAndEmpty(cookie)) {
+            String[] lines = cookie.split("\n");
+            for (String line : lines) {
+                Pattern pattern = Pattern.compile("([^:]*):\\s?(.*)");
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.matches()) {
+                    String key = matcher.group(1);
+                    String value = matcher.group(2);
+                    kvs.put(key, value);
+                }
+            }
+        }
+        
+        return kvs;
     }
 }
