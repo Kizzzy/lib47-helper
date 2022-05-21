@@ -20,29 +20,52 @@ public class PrintHelper {
         String.class
     );
     
-    public static String ToString(Object obj, PrintArgs[] args) {
-        return ToString(obj, 0, args);
+    private static boolean isSimple(Class<?> clazz) {
+        return clazz.isPrimitive() || clazz.isEnum() || classes.contains(clazz);
     }
     
-    private static String ToString(Object obj, int layer, PrintArgs[] args) {
+    public static String ToString(Object obj) {
+        return ToString(obj, null);
+    }
+    
+    public static String ToString(Object obj, PrintArgs[] args) {
+        return ToString(obj, 0, args, false);
+    }
+    
+    private static String ToString(Object obj, int layer, PrintArgs[] args, boolean arrayElement) {
+        if (obj == null) {
+            return "null";
+        }
+        
         Class<?> clazz = obj.getClass();
         
-        if (clazz.isPrimitive() || classes.contains(clazz) || clazz.isEnum()) {
+        if (isSimple(clazz)) {
             return obj.toString();
         }
         
         if (clazz.isArray()) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("[\r\n");
+            boolean expand = !isSimple(Array.get(obj, 0).getClass());
             
-            for (int i = 0, n = Array.getLength(obj); i < n; ++i) {
-                builder.append(ToString(Array.get(obj, i), layer + 1, args));
-                builder.append(",");
+            StringBuilder builder = new StringBuilder();
+            builder.append("[ ");
+            
+            if (expand) {
                 builder.append("\r\n");
             }
             
-            for (int i = 0; i < layer; ++i) {
-                builder.append("\t");
+            for (int i = 0, n = Array.getLength(obj); i < n; ++i) {
+                builder.append(ToString(Array.get(obj, i), layer + 1, args, true));
+                builder.append(", ");
+                
+                if (expand) {
+                    builder.append("\r\n");
+                }
+            }
+            
+            if (expand) {
+                for (int i = 0; i < layer; ++i) {
+                    builder.append("\t");
+                }
             }
             
             builder.append("]");
@@ -60,14 +83,17 @@ public class PrintHelper {
         
         Field[] fields = clazz.getFields();
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < layer; ++i) {
-            builder.append("\t");
+        
+        if (arrayElement) {
+            for (int i = 0; i < layer; ++i) {
+                builder.append("\t");
+            }
         }
         
         builder.append(clazz.getSimpleName());
-        builder.append("{ ");
+        builder.append(" { ");
         
-        if (_args != null && _args.expand) {
+        if (_args == null || _args.expand) {
             builder.append("\r\n");
         }
         
@@ -85,7 +111,7 @@ public class PrintHelper {
                 continue;
             }
             
-            if (_args != null && _args.expand) {
+            if (_args == null || _args.expand) {
                 for (int i = 0; i <= layer; ++i) {
                     builder.append("\t");
                 }
@@ -97,7 +123,7 @@ public class PrintHelper {
             boolean access = field.isAccessible();
             try {
                 field.setAccessible(true);
-                builder.append(ToString(field.get(obj), layer + 1, args));
+                builder.append(ToString(field.get(obj), layer + 1, args, false));
             } catch (Exception e) {
                 LogHelper.error(e);
             } finally {
@@ -106,12 +132,12 @@ public class PrintHelper {
             
             builder.append(", ");
             
-            if (_args != null && _args.expand) {
+            if (_args == null || _args.expand) {
                 builder.append("\r\n");
             }
         }
         
-        if (_args != null && _args.expand) {
+        if (_args == null || _args.expand) {
             for (int i = 0; i < layer; ++i) {
                 builder.append("\t");
             }
