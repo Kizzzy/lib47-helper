@@ -1,9 +1,13 @@
 package cn.kizzzy.helper;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class ByteHelper {
-
+    
     public static byte[] object2bytes(Object obj) {
         byte[] b = null;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -15,7 +19,7 @@ public class ByteHelper {
         }
         return b;
     }
-
+    
     public static Object bytes2object(byte[] bs) {
         Object obj = null;
         try (ByteArrayInputStream bais = new ByteArrayInputStream(bs);
@@ -26,7 +30,7 @@ public class ByteHelper {
         }
         return obj;
     }
-
+    
     public static byte[] intToBytes(int value) {
         byte[] src = new byte[4];
         src[3] = (byte) ((value >> 24) & 0xFF);
@@ -35,15 +39,15 @@ public class ByteHelper {
         src[0] = (byte) (value & 0xFF);
         return src;
     }
-
+    
     public static int bytesToInt(byte[] src) {
         return (src[0] & 0xFF) | ((src[1] & 0xFF) << 8) | ((src[2] & 0xFF) << 16) | ((src[3] & 0xFF) << 24);
     }
-
+    
     public static int bytesToInt(short[] src) {
         return (src[0] & 0xFF) | ((src[1] & 0xFF) << 8) | ((src[2] & 0xFF) << 16) | ((src[3] & 0xFF) << 24);
     }
-
+    
     public static byte[] intsToBytes(int[] ints) {
         byte[] bytes = new byte[ints.length];
         for (int i = 0, n = ints.length; i < n; ++i) {
@@ -55,11 +59,11 @@ public class ByteHelper {
         }
         return bytes;
     }
-
+    
     public static int[] hexToByteArray(String hex) {
         return hexToByteArray(hex, " ", false);
     }
-
+    
     public static int[] hexToByteArray(String hex, String split, boolean reverse) {
         String[] hexes = hex.split(" ");
         int[] array = new int[hexes.length];
@@ -72,11 +76,21 @@ public class ByteHelper {
         }
         return array;
     }
-
-    public static void printArray(int[] array) {
-        for (int i : array) {
-            System.out.print(i + " ");
+    
+    public static boolean equals(int[] arr1, int[] arr2) {
+        if (arr1 == null) {
+            return arr2 == null;
         }
-        System.out.println();
+        
+        if (arr2 == null || arr1.length != arr2.length) {
+            return false;
+        }
+        
+        for (int i = 0; i < arr1.length; ++i) {
+            if (arr1[i] != arr2[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 }

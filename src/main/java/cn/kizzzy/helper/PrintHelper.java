@@ -44,7 +44,7 @@ public class PrintHelper {
         }
         
         if (clazz.isArray()) {
-            boolean expand = !isSimple(Array.get(obj, 0).getClass());
+            boolean expand = Array.getLength(obj) > 0 && !isSimple(Array.get(obj, 0).getClass());
             
             StringBuilder builder = new StringBuilder();
             builder.append("[ ");
