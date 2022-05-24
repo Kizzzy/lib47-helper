@@ -1,6 +1,11 @@
 package cn.kizzzy.helper;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 /**
@@ -9,28 +14,28 @@ import java.util.regex.Pattern;
 public class IniHelper {
     private File configFile;
     private String filePath;
-
+    
     private static final IniHelper INSTANCE;
-
+    
     private static final String REGEX_SEC = "^\\[.+\\]$";
     private static final String REGEX_KEY = "^.+=";
     private static final Pattern patternSec;
     private static final Pattern patternKey;
-
+    
     static {
         INSTANCE = new IniHelper();
         patternSec = Pattern.compile(REGEX_SEC);
         patternKey = Pattern.compile(REGEX_KEY);
     }
-
+    
     private IniHelper() {
-
+    
     }
-
+    
     public static IniHelper getInstance() {
         return INSTANCE;
     }
-
+    
     public void setFilePath(String filePath) {
         try {
             this.filePath = filePath;
@@ -41,11 +46,11 @@ public class IniHelper {
             e.printStackTrace();
         }
     }
-
+    
     public String getFilePath() {
         return filePath;
     }
-
+    
     public String get(String section, String key, String defaultString) {
         boolean isFound = false;
         String line = null;
@@ -78,11 +83,11 @@ public class IniHelper {
         }
         return defaultString;
     }
-
+    
     public void set(String section, String key, String value) {
         String tempPath = filePath + System.currentTimeMillis();
         File tempFile = new File(tempPath);
-
+        
         boolean isChange = false;
         boolean isInSection = false;
         String line = null;
@@ -104,7 +109,7 @@ public class IniHelper {
                         isInSection = false;
                     }
                 }
-
+                
                 if (isInSection && patternKey.matcher(line).find()) {
                     if (line.split("=")[0].equals(key)) {
                         line = key + "=" + value;
@@ -132,11 +137,5 @@ public class IniHelper {
                 e.printStackTrace();
             }
         }
-    }
-
-    public static void main(String[] args) {
-        IniHelper config = IniHelper.getInstance();
-        config.setFilePath("src/config.ini");
-        System.out.println(config.get("zzy", "vv", "empty"));
     }
 }
