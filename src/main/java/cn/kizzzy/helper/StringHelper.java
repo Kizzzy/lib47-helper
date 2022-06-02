@@ -2,6 +2,7 @@ package cn.kizzzy.helper;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -67,6 +68,10 @@ public class StringHelper extends HexHelper {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
     
+    public static String firstLower(String str) {
+        return str.substring(0, 1).toLowerCase() + str.substring(1);
+    }
+    
     public static String format(String pattern, Object... args) {
         return MessageFormat.format(pattern, args);
     }
@@ -97,14 +102,14 @@ public class StringHelper extends HexHelper {
         return true;
     }
     
+    private static final Pattern COOKIE_PATTERN = Pattern.compile("([^:]*):\\s?(.*)");
+    
     public static Map<String, String> parseCookie(String cookie) {
         Map<String, String> kvs = new HashMap<>();
-        
         if (StringHelper.isNotNullAndEmpty(cookie)) {
             String[] lines = cookie.split("\n");
             for (String line : lines) {
-                Pattern pattern = Pattern.compile("([^:]*):\\s?(.*)");
-                Matcher matcher = pattern.matcher(line);
+                Matcher matcher = COOKIE_PATTERN.matcher(line);
                 if (matcher.matches()) {
                     String key = matcher.group(1);
                     String value = matcher.group(2);
@@ -112,7 +117,22 @@ public class StringHelper extends HexHelper {
                 }
             }
         }
-        
+        return kvs;
+    }
+    
+    public static Map<String, String> parseKvs(String cookie) {
+        return parseKvs(cookie, "\n", ":");
+    }
+    
+    public static Map<String, String> parseKvs(String cookie, String lineSeparator, String kvSeparator) {
+        Map<String, String> kvs = new LinkedHashMap<>();
+        if (StringHelper.isNotNullAndEmpty(cookie)) {
+            String[] lines = cookie.split(lineSeparator);
+            for (String line : lines) {
+                String[] nvs = line.split(kvSeparator, 2);
+                kvs.put(nvs[0], nvs[1].trim());
+            }
+        }
         return kvs;
     }
 }
