@@ -77,6 +77,60 @@ public class ByteHelper {
         return array;
     }
     
+    public static boolean equals(byte[] arr1, byte[] arr2) {
+        if (arr1 == null) {
+            return arr2 == null;
+        }
+        
+        if (arr2 == null || arr1.length != arr2.length) {
+            return false;
+        }
+        
+        for (int i = 0; i < arr1.length; ++i) {
+            if (arr1[i] != arr2[i]) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public static boolean equals(char[] arr1, char[] arr2) {
+        if (arr1 == null) {
+            return arr2 == null;
+        }
+        
+        if (arr2 == null || arr1.length != arr2.length) {
+            return false;
+        }
+        
+        for (int i = 0; i < arr1.length; ++i) {
+            if (arr1[i] != arr2[i]) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public static boolean equals(short[] arr1, short[] arr2) {
+        if (arr1 == null) {
+            return arr2 == null;
+        }
+        
+        if (arr2 == null || arr1.length != arr2.length) {
+            return false;
+        }
+        
+        for (int i = 0; i < arr1.length; ++i) {
+            if (arr1[i] != arr2[i]) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
     public static boolean equals(int[] arr1, int[] arr2) {
         if (arr1 == null) {
             return arr2 == null;
@@ -91,6 +145,79 @@ public class ByteHelper {
                 return false;
             }
         }
+        
+        return true;
+    }
+    
+    public static boolean equals(long[] arr1, long[] arr2) {
+        if (arr1 == null) {
+            return arr2 == null;
+        }
+        
+        if (arr2 == null || arr1.length != arr2.length) {
+            return false;
+        }
+        
+        for (int i = 0; i < arr1.length; ++i) {
+            if (arr1[i] != arr2[i]) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public static boolean equals(float[] arr1, float[] arr2) {
+        if (arr1 == null) {
+            return arr2 == null;
+        }
+        
+        if (arr2 == null || arr1.length != arr2.length) {
+            return false;
+        }
+        
+        for (int i = 0; i < arr1.length; ++i) {
+            if (arr1[i] != arr2[i]) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public static boolean equals(double[] arr1, double[] arr2) {
+        if (arr1 == null) {
+            return arr2 == null;
+        }
+        
+        if (arr2 == null || arr1.length != arr2.length) {
+            return false;
+        }
+        
+        for (int i = 0; i < arr1.length; ++i) {
+            if (arr1[i] != arr2[i]) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public static <T> boolean equals(T[] arr1, T[] arr2) {
+        if (arr1 == null) {
+            return arr2 == null;
+        }
+        
+        if (arr2 == null || arr1.length != arr2.length) {
+            return false;
+        }
+        
+        for (int i = 0; i < arr1.length; ++i) {
+            if (arr1[i].equals(arr2[i])) {
+                return false;
+            }
+        }
+        
         return true;
     }
 }
