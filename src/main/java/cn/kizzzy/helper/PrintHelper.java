@@ -96,7 +96,7 @@ public class PrintHelper {
         
         Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
-            if ( method.getParameters().length == 0 && method.getName().startsWith("get") && method.getName().length() > 3) {
+            if (method.getParameters().length == 0 && method.getName().startsWith("get") && method.getName().length() > 3) {
                 String fieldName = method.getName().substring(3);
                 fieldName = StringHelper.firstLower(fieldName);
                 
