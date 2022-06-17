@@ -5,6 +5,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,10 +39,10 @@ public class PrintHelper {
     }
     
     public static String ToString(Object obj, PrintArgs[] args) {
-        return ToString(obj, 0, args, false);
+        return ToString(obj, 0, args, false, new HashMap<>());
     }
     
-    private static String ToString(Object obj, int layer, PrintArgs[] args, boolean arrayElement) {
+    private static String ToString(Object obj, int layer, PrintArgs[] args, boolean arrayElement, Map<Object, Boolean> visitedKvs) {
         if (obj == null) {
             return "null";
         }
@@ -53,17 +54,23 @@ public class PrintHelper {
         }
         
         if (clazz.isArray()) {
-            return processIterable(args, layer, Array.getLength(obj), i -> Array.get(obj, i));
+            return processIterable(args, layer, Array.getLength(obj), i -> Array.get(obj, i), visitedKvs);
         }
         
         if (List.class.isAssignableFrom(clazz)) {
             List list = (List) obj;
-            return processIterable(args, layer, list.size(), list::get);
+            return processIterable(args, layer, list.size(), list::get, visitedKvs);
         }
         
         if (Map.class.isAssignableFrom(clazz)) {
             return "Un Handle Map";
         }
+        
+        boolean visited = visitedKvs.computeIfAbsent(obj, k -> false);
+        if (visited) {
+            return "@" + obj.hashCode();
+        }
+        visitedKvs.put(obj, true);
         
         PrintArgs _args = null;
         if (args != null) {
@@ -82,7 +89,7 @@ public class PrintHelper {
             }
         }
         
-        builder.append(clazz.getSimpleName());
+        builder.append(clazz.getSimpleName()).append("@").append(obj.hashCode());
         builder.append(" { ");
         
         if (_args == null || _args.expand) {
@@ -91,7 +98,7 @@ public class PrintHelper {
         
         Field[] fields = clazz.getFields();
         for (Field field : fields) {
-            processField(args, _args, layer, builder, field.getName(), field, () -> field.get(obj));
+            processField(args, _args, layer, builder, field.getName(), field, () -> field.get(obj), visitedKvs);
         }
         
         Method[] methods = clazz.getDeclaredMethods();
@@ -100,7 +107,7 @@ public class PrintHelper {
                 String fieldName = method.getName().substring(3);
                 fieldName = StringHelper.firstLower(fieldName);
                 
-                processField(args, _args, layer, builder, fieldName, method, () -> method.invoke(obj));
+                processField(args, _args, layer, builder, fieldName, method, () -> method.invoke(obj), visitedKvs);
             }
         }
         
@@ -113,7 +120,7 @@ public class PrintHelper {
         return builder.toString();
     }
     
-    private static String processIterable(PrintArgs[] args, int layer, int length, Function<Integer, Object> getter) {
+    private static String processIterable(PrintArgs[] args, int layer, int length, Function<Integer, Object> getter, Map<Object, Boolean> visitedKvs) {
         StringBuilder builder = new StringBuilder();
         builder.append("[ ");
         
@@ -123,7 +130,7 @@ public class PrintHelper {
         }
         
         for (int i = 0; i < length; ++i) {
-            builder.append(ToString(getter.apply(i), layer + 1, args, true));
+            builder.append(ToString(getter.apply(i), layer + 1, args, true, visitedKvs));
             builder.append(", ");
             
             if (expand) {
@@ -141,7 +148,7 @@ public class PrintHelper {
         return builder.toString();
     }
     
-    private static void processField(PrintArgs[] args, PrintArgs _args, int layer, StringBuilder builder, String fieldName, AccessibleObject accessibleObject, Getter getter) {
+    private static void processField(PrintArgs[] args, PrintArgs _args, int layer, StringBuilder builder, String fieldName, AccessibleObject accessibleObject, Getter getter, Map<Object, Boolean> visitedKvs) {
         PrintArgs.Item _item = null;
         if (_args != null && _args.items != null) {
             for (PrintArgs.Item temp : _args.items) {
@@ -167,7 +174,7 @@ public class PrintHelper {
         boolean access = accessibleObject.isAccessible();
         try {
             accessibleObject.setAccessible(true);
-            builder.append(ToString(getter.get(), layer + 1, args, false));
+            builder.append(ToString(getter.get(), layer + 1, args, false, visitedKvs));
         } catch (Exception e) {
             LogHelper.error(e);
         } finally {
