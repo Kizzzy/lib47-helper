@@ -39,10 +39,10 @@ public class PrintHelper {
     }
     
     public static String ToString(Object obj, PrintArgs[] args) {
-        return ToString(obj, 0, args, false, new HashMap<>());
+        return ToString(obj, 0, false, args, false, new HashMap<>());
     }
     
-    private static String ToString(Object obj, int layer, PrintArgs[] args, boolean arrayElement, Map<Object, Boolean> visitedKvs) {
+    private static String ToString(Object obj, int layer, boolean fromIterable, PrintArgs[] args, boolean arrayElement, Map<Object, Boolean> visitedKvs) {
         if (obj == null) {
             return "null";
         }
@@ -54,12 +54,12 @@ public class PrintHelper {
         }
         
         if (clazz.isArray()) {
-            return processIterable(args, layer, Array.getLength(obj), i -> Array.get(obj, i), visitedKvs);
+            return processIterable(args, layer, fromIterable, Array.getLength(obj), i -> Array.get(obj, i), visitedKvs);
         }
         
         if (List.class.isAssignableFrom(clazz)) {
             List list = (List) obj;
-            return processIterable(args, layer, list.size(), list::get, visitedKvs);
+            return processIterable(args, layer, fromIterable, list.size(), list::get, visitedKvs);
         }
         
         if (Map.class.isAssignableFrom(clazz)) {
@@ -120,9 +120,16 @@ public class PrintHelper {
         return builder.toString();
     }
     
-    private static String processIterable(PrintArgs[] args, int layer, int length, Function<Integer, Object> getter, Map<Object, Boolean> visitedKvs) {
+    private static String processIterable(PrintArgs[] args, int layer, boolean fromIterable, int length, Function<Integer, Object> getter, Map<Object, Boolean> visitedKvs) {
         StringBuilder builder = new StringBuilder();
-        builder.append("[ ");
+        
+        if (fromIterable) {
+            for (int i = 0; i < layer; ++i) {
+                builder.append("\t");
+            }
+        }
+        
+        builder.append("<").append(length).append("> [ ");
         
         boolean expand = length > 0 && !isSimple(getter.apply(0).getClass());
         if (expand) {
@@ -130,7 +137,7 @@ public class PrintHelper {
         }
         
         for (int i = 0; i < length; ++i) {
-            builder.append(ToString(getter.apply(i), layer + 1, args, true, visitedKvs));
+            builder.append(ToString(getter.apply(i), layer + 1, true, args, true, visitedKvs));
             builder.append(", ");
             
             if (expand) {
@@ -174,7 +181,7 @@ public class PrintHelper {
         boolean access = accessibleObject.isAccessible();
         try {
             accessibleObject.setAccessible(true);
-            builder.append(ToString(getter.get(), layer + 1, args, false, visitedKvs));
+            builder.append(ToString(getter.get(), layer + 1, false, args, false, visitedKvs));
         } catch (Exception e) {
             LogHelper.error(e);
         } finally {
