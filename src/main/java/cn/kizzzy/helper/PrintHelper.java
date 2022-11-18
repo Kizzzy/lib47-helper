@@ -44,6 +44,14 @@ public class PrintHelper {
     
     private static String ToString(Object obj, int layer, boolean fromIterable, PrintArgs[] args, boolean arrayElement, Map<Object, Boolean> visitedKvs) {
         if (obj == null) {
+            if (arrayElement) {
+                StringBuilder _builder = new StringBuilder();
+                for (int i = 0; i < layer; ++i) {
+                    _builder.append("\t");
+                }
+                _builder.append("null");
+                return _builder.toString();
+            }
             return "null";
         }
         
@@ -131,7 +139,15 @@ public class PrintHelper {
         
         builder.append("<").append(length).append("> [ ");
         
-        boolean expand = length > 0 && !isSimple(getter.apply(0).getClass());
+        boolean expand = false;
+        for (int i = 0; i < length; ++i) {
+            Object item = getter.apply(i);
+            if (item != null) {
+                expand = !isSimple(item.getClass());
+                break;
+            }
+        }
+        
         if (expand) {
             builder.append("\r\n");
         }
