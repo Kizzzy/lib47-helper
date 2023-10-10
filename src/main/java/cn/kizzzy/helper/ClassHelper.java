@@ -9,15 +9,15 @@ import java.lang.reflect.Type;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-@SuppressWarnings("unchecked")
 public class ClassHelper {
     
-    public static <T> Class<T> getGenericClass(Class<?> clazz) {
+    public static Type getGenericClass(Class<?> clazz) {
         return getGenericClass(clazz, 0);
     }
     
-    public static <T> Class<T> getGenericClass(Class<?> clazz, int index) {
-        return (Class<T>) ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[index];
+    public static Type getGenericClass(Class<?> clazz, int index) {
+        ParameterizedType superType = (ParameterizedType) clazz.getGenericSuperclass();
+        return superType.getActualTypeArguments()[index];
     }
     
     public static Type getParameterizedType(Class<?> rawClass, Class<?>... paramClass) {
