@@ -6,31 +6,33 @@ import org.apache.log4j.spi.LoggingEvent;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CustomAppender extends WriterAppender {
-    private static Map<Integer, CustomAppenderHandler> handlers = new ConcurrentHashMap<>();
-
+public class Log4jAppender extends WriterAppender {
+    
+    private static final Map<Integer, Log4jAppenderHandler> handlerKvs
+        = new ConcurrentHashMap<>();
+    
     /**
      * add handler
      */
-    public static void add(CustomAppenderHandler handler) {
-        handlers.put(handler.hashCode(), handler);
+    public static void add(Log4jAppenderHandler handler) {
+        handlerKvs.put(handler.hashCode(), handler);
     }
-
+    
     /**
      * remove handler
      */
-    public static void remove(CustomAppenderHandler handler) {
-        handlers.remove(handler.hashCode());
+    public static void remove(Log4jAppenderHandler handler) {
+        handlerKvs.remove(handler.hashCode());
     }
-
+    
     /**
      * Format and then append the loggingEvent to the stored TextArea.
      */
     @Override
     public void append(final LoggingEvent loggingEvent) {
-        if (handlers.size() > 0) {
+        if (!handlerKvs.isEmpty()) {
             String message = this.layout.format(loggingEvent);
-            for (CustomAppenderHandler handler : handlers.values()) {
+            for (Log4jAppenderHandler handler : handlerKvs.values()) {
                 handler.handleLog(message);
             }
         }

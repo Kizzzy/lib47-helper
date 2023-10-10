@@ -5,10 +5,10 @@ import org.slf4j.LoggerFactory;
 
 public class LogHelper {
     private static final String THIS_NAME = LogHelper.class.getName();
-    private static final Logger LOGGER;// = LoggerFactory.getLogger(LogHelper.class);
+    private static final Logger LOGGER;
     
     static {
-        System.setProperty("log4j.configuratorClass", "cn.kizzzy.helper.Log4jConfigurator");
+        System.setProperty("log4j.configuratorClass", "cn.kizzzy.log.Log4jConfigurator");
         LOGGER = LoggerFactory.getLogger(LogHelper.class);
     }
     
@@ -34,18 +34,18 @@ public class LogHelper {
         if (traces.length < 1) {
             return "";
         }
-        boolean flag = false;
-        boolean flag2 = false;
+        boolean findSelf = false;
+        boolean skipped = false;
         for (StackTraceElement ste : traces) {
-            if (flag) {
-                if (!flag2) {
-                    flag2 = true;
+            if (findSelf) {
+                if (!skipped) {
+                    skipped = true;
                 } else {
                     return String.format("%s\r\n%s", ste.toString(), msg);
                 }
             }
             if (THIS_NAME.equalsIgnoreCase(ste.getClassName())) {
-                flag = true;
+                findSelf = true;
             }
         }
         return "";

@@ -1,4 +1,4 @@
-package cn.kizzzy.helper;
+package cn.kizzzy.log;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.spi.LoggerRepository;
