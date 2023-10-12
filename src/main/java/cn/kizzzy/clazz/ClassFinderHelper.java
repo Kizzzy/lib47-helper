@@ -1,6 +1,7 @@
 package cn.kizzzy.clazz;
 
-import cn.kizzzy.helper.LogHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -9,6 +10,9 @@ import java.util.Enumeration;
 import java.util.List;
 
 public class ClassFinderHelper {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ClassFinderHelper.class);
+    
     private static final ClassFinder fileClassFinder = new FileClassFinder();
     private static final ClassFinder jarClassFinder = new JarClassFinder();
     private static final ClassFinder nullClassFinder = new NullClassFinder();
@@ -81,13 +85,13 @@ public class ClassFinderHelper {
             Enumeration<URL> urls = loader.getResources(path);
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
-                LogHelper.debug("url: {}", url);
+                logger.debug("url: {}", url);
+                
                 list.addAll(getClassFinder(url).find(url, filter));
             }
         } catch (IOException | ClassNotFoundException e) {
-            LogHelper.error(null, e);
+            logger.error("find class failed", e);
         }
-        
         return list;
     }
 }

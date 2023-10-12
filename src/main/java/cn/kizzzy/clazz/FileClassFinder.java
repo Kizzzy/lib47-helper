@@ -5,7 +5,7 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
-public class FileClassFinder extends BaseClassFinder {
+public class FileClassFinder extends AbstractClassFinder {
     
     @Override
     public List<Class<?>> find(URL url, ClassFilter filter) throws ClassNotFoundException {

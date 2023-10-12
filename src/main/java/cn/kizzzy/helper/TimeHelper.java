@@ -1,14 +1,20 @@
 package cn.kizzzy.helper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.function.Supplier;
 
 public class TimeHelper {
+    
+    private static final Logger logger = LoggerFactory.getLogger(TimeHelper.class);
     
     private static long TIME_OFFSET = 0;
     private static final String webUrl = "http://www.ntsc.ac.cn"; // 中国科学院国家授时中心
@@ -30,19 +36,14 @@ public class TimeHelper {
         return new Date(currentTimeMillis());
     }
     
-    public static long getWebTime() {
-        try {
-            URL url = new URL(webUrl); // 取得资源对象
-            URLConnection conn = url.openConnection(); // 生成连接对象
-            conn.connect(); // 发出连接
-            return conn.getDate();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return 0;
+    public static long getWebTime() throws IOException {
+        URL url = new URL(webUrl);
+        URLConnection conn = url.openConnection();
+        conn.connect();
+        return conn.getDate();
     }
     
-    public static Date getWebDate() {
+    public static Date getWebDate() throws IOException {
         return new Date(getWebTime());
     }
     
@@ -63,13 +64,8 @@ public class TimeHelper {
         return sdf.format(date);
     }
     
-    public static Date parse(String str) {
-        try {
-            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+    public static Date parse(String str) throws ParseException {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(str);
     }
     
     public static String dayOfWeek(Date date) {
@@ -150,7 +146,7 @@ public class TimeHelper {
         return millisOfDay() * n;
     }
     
-    public static void setLocalTime(String strDate, String strTime) {
+    public static void setLocalTime(String strDate, String strTime) throws ParseException {
         setLocalTime(parse(strDate + " " + strTime));
     }
     
@@ -199,22 +195,20 @@ public class TimeHelper {
     public static <T> T execute(String msg, Supplier<T> callback) {
         long time = System.currentTimeMillis();
         T t = callback.get();
-        LogHelper.debug(String.format("%s, cost %d ms", msg, System.currentTimeMillis() - time));
+        logger.debug(String.format("%s, cost %d ms", msg, System.currentTimeMillis() - time));
         return t;
     }
     
     public static void execute(String msg, Runnable runnable) {
-        long time = System.currentTimeMillis();
-        runnable.run();
-        LogHelper.debug(String.format("%s, cost %d ms", msg, System.currentTimeMillis() - time));
+        execute(null, msg, runnable);
     }
     
     public static void execute(String startMsg, String msg, Runnable runnable) {
-        if(startMsg != null){
-            LogHelper.debug(startMsg);
+        if (startMsg != null) {
+            logger.debug(startMsg);
         }
         long time = System.currentTimeMillis();
         runnable.run();
-        LogHelper.debug(String.format("%s, cost %d ms", msg, System.currentTimeMillis() - time));
+        logger.debug(String.format("%s, cost %d ms", msg, System.currentTimeMillis() - time));
     }
 }

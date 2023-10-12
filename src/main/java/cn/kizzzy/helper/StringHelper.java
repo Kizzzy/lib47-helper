@@ -1,23 +1,30 @@
 package cn.kizzzy.helper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StringHelper extends HexHelper {
     
+    protected static final Logger logger = LoggerFactory.getLogger(StringHelper.class);
+    
+    private static final Pattern COOKIE_PATTERN
+        = Pattern.compile("([^:]*):\\s?(.*)");
+    
     public static boolean isLetter(char c) {
         return c / 0x80 == 0;
     }
     
     public static boolean isNullOrEmpty(String s) {
-        if (s == null || s.length() == 0 || s.trim().length() == 0)
-            return true;
-        return false;
+        return s == null || s.isEmpty() || s.trim().isEmpty();
     }
     
     public static boolean isNotNullAndEmpty(String s) {
@@ -85,24 +92,21 @@ public class StringHelper extends HexHelper {
      * @param var0     first seperator
      * @param var1     second seperator
      * @param callback consumer
-     * @return
      */
     public static boolean split(String str, String var0, String var1, Consumer<String[]> callback) {
         try {
-            if (isNotNullAndEmpty(str)) {
-                String[] var2 = str.split(var0);
-                for (String var3 : var2) {
-                    callback.accept(var3.split(var1));
-                }
+            Objects.requireNonNull(str);
+            
+            String[] var2 = str.split(var0);
+            for (String var3 : var2) {
+                callback.accept(var3.split(var1));
             }
+            return true;
         } catch (Exception e) {
-            LogHelper.error(null, e);
+            logger.error("split error", e);
             return false;
         }
-        return true;
     }
-    
-    private static final Pattern COOKIE_PATTERN = Pattern.compile("([^:]*):\\s?(.*)");
     
     public static Map<String, String> parseCookie(String cookie) {
         Map<String, String> kvs = new HashMap<>();

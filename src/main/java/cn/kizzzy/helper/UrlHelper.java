@@ -9,8 +9,38 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class UrlHelper extends HexHelper {
-    private static final Pattern PATTERN_HEADERS = Pattern.compile("^(?<key>[^\\s]+):\\s?(?<val>[^\\s]+)$");
-
+    
+    private static final Pattern PATTERN_HEADERS
+        = Pattern.compile("^(?<key>[^\\s]+):\\s?(?<val>[^\\s]+)$");
+    
+    /**
+     * Url编码
+     */
+    public static String url_encode(String str) throws UnsupportedEncodingException {
+        return url_encode(str, "UTF-8");
+    }
+    
+    /**
+     * Url解码
+     */
+    public static String url_encode(String str, String enc) throws UnsupportedEncodingException {
+        return URLEncoder.encode(str, enc);
+    }
+    
+    /**
+     * Url解码
+     */
+    public static String url_decode(String str) throws UnsupportedEncodingException {
+        return url_decode(str, "UTF-8");
+    }
+    
+    /**
+     * Url编码
+     */
+    public static String url_decode(String str, String enc) throws UnsupportedEncodingException {
+        return URLDecoder.decode(str, enc);
+    }
+    
     /**
      * 解析请求
      */
@@ -30,43 +60,5 @@ public class UrlHelper extends HexHelper {
             }
         }
         return map;
-    }
-
-    /**
-     * Url编码
-     */
-    public static String url_encode(String str) {
-        return url_encode(str, "UTF-8");
-    }
-
-    /**
-     * Url解码
-     */
-    public static String url_encode(String str, String enc) {
-        try {
-            return URLEncoder.encode(str, enc);
-        } catch (UnsupportedEncodingException e) {
-            LogHelper.error(null, e);
-        }
-        return "";
-    }
-
-    /**
-     * Url解码
-     */
-    public static String url_decode(String str) {
-        return url_decode(str, "UTF-8");
-    }
-
-    /**
-     * Url编码
-     */
-    public static String url_decode(String str, String enc) {
-        try {
-            return URLDecoder.decode(str, enc);
-        } catch (UnsupportedEncodingException e) {
-            LogHelper.error(null, e);
-        }
-        return "";
     }
 }

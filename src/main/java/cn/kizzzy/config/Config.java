@@ -1,12 +1,13 @@
 package cn.kizzzy.config;
 
-import cn.kizzzy.helper.LogHelper;
+import cn.kizzzy.helper.FileHelper;
 import cn.kizzzy.helper.StringHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -14,9 +15,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class Config extends Properties {
+    
+    private static final Logger logger = LoggerFactory.getLogger(Class.class);
+    
     private final boolean autoSave;
     private File file;
-    private Set<Object> keys = new TreeSet<>();
+    private final Set<Object> keys
+        = new TreeSet<>();
     
     public Config() {
         this(true);
@@ -68,7 +73,7 @@ public class Config extends Properties {
     
     public boolean checkValid(String key) {
         if (StringHelper.isNullOrEmpty(getProperty(key))) {
-            LogHelper.error("[{}] is not config", key);
+            logger.info("config[{}] is not found", key);
             return false;
         }
         return true;
@@ -94,30 +99,21 @@ public class Config extends Properties {
     public void loadFromFile(String path) {
         try {
             file = new File(String.format("%s/%s", System.getProperty("user.home"), path));
-            if (!file.exists()) {
-                File parent = file.getParentFile();
-                if (!parent.exists()) {
-                    if (!parent.mkdirs()) {
-                        throw new IOException("create new file failed: " + path);
-                    }
-                }
-                if (!file.createNewFile()) {
-                    throw new IOException("create new file failed: " + path);
-                }
+            if (FileHelper.createFileIfAbsent(file)) {
+                load(Files.newInputStream(file.toPath()));
             }
-            load(new FileInputStream(file));
         } catch (IOException e) {
             file = null;
-            LogHelper.error(null, e);
+            logger.error("load config from file failed", e);
         }
     }
     
     public void saveToFile() {
         if (file != null) {
             try {
-                store(new FileOutputStream(file), null);
+                store(Files.newOutputStream(file.toPath()), null);
             } catch (IOException e) {
-                LogHelper.error(null, e);
+                logger.error("save config to file failed", e);
             }
         }
     }

@@ -12,7 +12,7 @@ import java.util.jar.JarFile;
 /**
  * 第三方Jar类库的引用。<br/>
  */
-public class JarClassFinder extends BaseClassFinder {
+public class JarClassFinder extends AbstractClassFinder {
     
     @Override
     public List<Class<?>> find(URL url, ClassFilter filter) throws IOException, ClassNotFoundException {

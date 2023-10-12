@@ -1,6 +1,8 @@
 package cn.kizzzy.helper;
 
-import java.lang.reflect.AccessibleObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -12,6 +14,8 @@ import java.util.Objects;
 import java.util.function.Function;
 
 public class PrintHelper {
+    
+    private static final Logger logger = LoggerFactory.getLogger(PrintHelper.class);
     
     private interface Getter {
         
@@ -106,7 +110,10 @@ public class PrintHelper {
         
         Field[] fields = clazz.getFields();
         for (Field field : fields) {
-            processField(args, _args, layer, builder, field.getName(), field, () -> field.get(obj), visitedKvs);
+            processField(
+                args, _args, layer, builder, field.getName(),
+                () -> ReflectHelper.getValue(field, obj), visitedKvs
+            );
         }
         
         Method[] methods = clazz.getDeclaredMethods();
@@ -115,7 +122,10 @@ public class PrintHelper {
                 String fieldName = method.getName().substring(3);
                 fieldName = StringHelper.firstLower(fieldName);
                 
-                processField(args, _args, layer, builder, fieldName, method, () -> method.invoke(obj), visitedKvs);
+                processField(
+                    args, _args, layer, builder, fieldName,
+                    () -> ReflectHelper.getter(method, obj), visitedKvs
+                );
             }
         }
         
@@ -171,7 +181,7 @@ public class PrintHelper {
         return builder.toString();
     }
     
-    private static void processField(PrintArgs[] args, PrintArgs _args, int layer, StringBuilder builder, String fieldName, AccessibleObject accessibleObject, Getter getter, Map<Object, Boolean> visitedKvs) {
+    private static void processField(PrintArgs[] args, PrintArgs _args, int layer, StringBuilder builder, String fieldName, Getter getter, Map<Object, Boolean> visitedKvs) {
         PrintArgs.Item _item = null;
         if (_args != null && _args.items != null) {
             for (PrintArgs.Item temp : _args.items) {
@@ -194,14 +204,10 @@ public class PrintHelper {
         builder.append(fieldName);
         builder.append(" = ");
         
-        boolean access = accessibleObject.isAccessible();
         try {
-            accessibleObject.setAccessible(true);
             builder.append(ToString(getter.get(), layer + 1, false, args, false, visitedKvs));
         } catch (Exception e) {
-            LogHelper.error(e);
-        } finally {
-            accessibleObject.setAccessible(access);
+            logger.error("invoke getter failed", e);
         }
         builder.append(", ");
         
