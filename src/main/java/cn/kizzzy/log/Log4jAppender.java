@@ -31,9 +31,8 @@ public class Log4jAppender extends WriterAppender {
     @Override
     public void append(final LoggingEvent loggingEvent) {
         if (!handlerKvs.isEmpty()) {
-            String message = this.layout.format(loggingEvent);
             for (Log4jAppenderHandler handler : handlerKvs.values()) {
-                handler.handleLog(message);
+                handler.handleLog(loggingEvent);
             }
         }
     }
