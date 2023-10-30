@@ -1,4 +1,4 @@
-package cn.kizzzy.state;
+package cn.kizzzy.ai.fsm;
 
 import java.util.HashMap;
 import java.util.Map;

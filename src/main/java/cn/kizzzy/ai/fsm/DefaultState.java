@@ -1,4 +1,4 @@
-package cn.kizzzy.state;
+package cn.kizzzy.ai.fsm;
 
 public abstract class DefaultState<T, R> implements IState<T, R> {
     protected long enterTime;

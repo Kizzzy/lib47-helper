@@ -1,4 +1,4 @@
-package cn.kizzzy.state;
+package cn.kizzzy.ai.fsm;
 
 public interface IStateMachine<T, R> {
     
