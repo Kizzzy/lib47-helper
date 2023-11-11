@@ -7,6 +7,9 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FileType {
-
+public @interface Path {
+    
+    boolean file() default true;
+    
+    boolean save() default false;
 }
