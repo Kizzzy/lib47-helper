@@ -75,7 +75,8 @@ public class PrintHelper {
         }
         
         if (Map.class.isAssignableFrom(clazz)) {
-            return "Un Handle Map";
+            Map map = (Map) obj;
+            return processKeyValue(args, layer, fromIterable, map.size(), map.keySet(), map::get, visitedKvs);
         }
         
         boolean visited = visitedKvs.computeIfAbsent(obj, k -> false);
@@ -138,7 +139,59 @@ public class PrintHelper {
         return builder.toString();
     }
     
-    private static String processIterable(PrintArgs[] args, int layer, boolean fromIterable, int length, Function<Integer, Object> getter, Map<Object, Boolean> visitedKvs) {
+    private static <T> String processKeyValue(PrintArgs[] args, int layer, boolean fromIterable, int length,
+                                              Iterable<T> iterable, Function<T, Object> getter,
+                                              Map<Object, Boolean> visitedKvs) {
+        StringBuilder builder = new StringBuilder();
+        
+        if (fromIterable) {
+            for (int i = 0; i < layer; ++i) {
+                builder.append("\t");
+            }
+        }
+        
+        builder.append("<").append(length).append("> {");
+        
+        boolean expand = false;
+        for (T key : iterable) {
+            Object item = getter.apply(key);
+            if (item != null) {
+                expand = !isSimple(item.getClass());
+                break;
+            }
+        }
+        
+        if (expand) {
+            builder.append("\r\n");
+        }
+        
+        for (T key : iterable) {
+            for (int i = 0; i < layer + 1; ++i) {
+                builder.append("\t");
+            }
+            builder.append("{ ");
+            builder.append(ToString(key, layer + 1, false, args, true, visitedKvs));
+            builder.append(", ");
+            builder.append(ToString(getter.apply(key), layer + 1, false, args, true, visitedKvs));
+            builder.append("},");
+            
+            if (expand) {
+                builder.append("\r\n");
+            }
+        }
+        
+        if (expand) {
+            for (int i = 0; i < layer; ++i) {
+                builder.append("\t");
+            }
+        }
+        
+        builder.append("}");
+        return builder.toString();
+    }
+    
+    private static String processIterable(PrintArgs[] args, int layer, boolean fromIterable, int length,
+                                          Function<Integer, Object> getter, Map<Object, Boolean> visitedKvs) {
         StringBuilder builder = new StringBuilder();
         
         if (fromIterable) {
@@ -181,7 +234,8 @@ public class PrintHelper {
         return builder.toString();
     }
     
-    private static void processField(PrintArgs[] args, PrintArgs _args, int layer, StringBuilder builder, String fieldName, Getter getter, Map<Object, Boolean> visitedKvs) {
+    private static void processField(PrintArgs[] args, PrintArgs _args, int layer, StringBuilder builder,
+                                     String fieldName, Getter getter, Map<Object, Boolean> visitedKvs) {
         PrintArgs.Item _item = null;
         if (_args != null && _args.items != null) {
             for (PrintArgs.Item temp : _args.items) {
