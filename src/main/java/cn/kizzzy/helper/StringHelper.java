@@ -16,9 +16,6 @@ public class StringHelper extends HexHelper {
     
     protected static final Logger logger = LoggerFactory.getLogger(StringHelper.class);
     
-    private static final Pattern COOKIE_PATTERN
-        = Pattern.compile("([^:]*):\\s?(.*)");
-    
     public static boolean isLetter(char c) {
         return c / 0x80 == 0;
     }
@@ -107,6 +104,9 @@ public class StringHelper extends HexHelper {
             return false;
         }
     }
+    
+    private static final Pattern COOKIE_PATTERN
+        = Pattern.compile("(.*?)\\s?:\\s?(.*)");
     
     public static Map<String, String> parseCookie(String cookie) {
         Map<String, String> kvs = new HashMap<>();
