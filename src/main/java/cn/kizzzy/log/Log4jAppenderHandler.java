@@ -1,8 +1,8 @@
 package cn.kizzzy.log;
 
-import org.apache.logging.log4j.core.LogEvent;
+import org.apache.log4j.spi.LoggingEvent;
 
 public interface Log4jAppenderHandler {
     
-    void handleLog(LogEvent event);
+    void handleLog(LoggingEvent event);
 }
