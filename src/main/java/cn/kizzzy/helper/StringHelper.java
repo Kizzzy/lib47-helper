@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -106,16 +105,17 @@ public class StringHelper extends HexHelper {
     }
     
     private static final Pattern COOKIE_PATTERN
-        = Pattern.compile("(.*?)\\s?:\\s?(.*)");
+        = Pattern.compile("(.+?)\\s?:\\s?(.*)");
     
     public static Map<String, String> parseCookie(String cookie) {
-        Map<String, String> kvs = new HashMap<>();
+        cookie = cookie.replaceAll(":\n", ":");
+        Map<String, String> kvs = new LinkedHashMap<>();
         if (StringHelper.isNotNullAndEmpty(cookie)) {
             String[] lines = cookie.split("\n");
             for (String line : lines) {
                 Matcher matcher = COOKIE_PATTERN.matcher(line);
                 if (matcher.matches()) {
-                    String key = matcher.group(1);
+                    String key = matcher.group(1).replaceAll(":", "");
                     String value = matcher.group(2);
                     kvs.put(key, value);
                 }
