@@ -1,4 +1,4 @@
-package cn.kizzzy.helper;
+package cn.kizzzy.format;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,17 +10,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 
 public class PrintHelper {
     
     private static final Logger logger = LoggerFactory.getLogger(PrintHelper.class);
-    
-    private interface Getter {
-        
-        Object get() throws Exception;
-    }
     
     private static final List<Class<?>> classes = Arrays.asList(
         Boolean.class,
@@ -39,44 +33,36 @@ public class PrintHelper {
     }
     
     public static String ToString(Object obj) {
-        return ToString(obj, null);
+        return ToString(obj, 0, false, false, new HashMap<>());
     }
     
-    public static String ToString(Object obj, PrintArgs[] args) {
-        return ToString(obj, 0, false, args, false, new HashMap<>());
-    }
-    
-    private static String ToString(Object obj, int layer, boolean fromIterable, PrintArgs[] args, boolean arrayElement, Map<Object, Boolean> visitedKvs) {
+    private static String ToString(Object obj, int layer, boolean fromIterable, boolean arrayElement, Map<Object, Boolean> visitedKvs) {
         if (obj == null) {
-            if (arrayElement) {
-                StringBuilder _builder = new StringBuilder();
-                for (int i = 0; i < layer; ++i) {
-                    _builder.append("\t");
-                }
-                _builder.append("null");
-                return _builder.toString();
-            }
-            return "null";
+            return processNull(layer, arrayElement);
         }
         
         Class<?> clazz = obj.getClass();
+        
+        if (clazz.getAnnotation(Ignore.class) != null) {
+            return "ignore";
+        }
         
         if (isSimple(clazz)) {
             return obj.toString();
         }
         
         if (clazz.isArray()) {
-            return processIterable(args, layer, fromIterable, Array.getLength(obj), i -> Array.get(obj, i), visitedKvs);
+            return processIterable(layer, fromIterable, Array.getLength(obj), i -> Array.get(obj, i), visitedKvs);
         }
         
         if (List.class.isAssignableFrom(clazz)) {
             List list = (List) obj;
-            return processIterable(args, layer, fromIterable, list.size(), list::get, visitedKvs);
+            return processIterable(layer, fromIterable, list.size(), list::get, visitedKvs);
         }
         
         if (Map.class.isAssignableFrom(clazz)) {
             Map map = (Map) obj;
-            return processKeyValue(args, layer, fromIterable, map.size(), map.keySet(), map::get, visitedKvs);
+            return processKeyValue(layer, fromIterable, map.size(), map.keySet(), map::get, visitedKvs);
         }
         
         boolean visited = visitedKvs.computeIfAbsent(obj, k -> false);
@@ -84,15 +70,6 @@ public class PrintHelper {
             return "@" + obj.hashCode();
         }
         visitedKvs.put(obj, true);
-        
-        PrintArgs _args = null;
-        if (args != null) {
-            for (PrintArgs temp : args) {
-                if (temp.clazz == clazz) {
-                    _args = temp;
-                }
-            }
-        }
         
         StringBuilder builder = new StringBuilder();
         
@@ -105,41 +82,44 @@ public class PrintHelper {
         builder.append(clazz.getSimpleName()).append("@").append(obj.hashCode());
         builder.append(" { ");
         
-        if (_args == null || _args.expand) {
+        boolean expand = clazz.getAnnotation(Shrink.class) == null;
+        if (expand) {
             builder.append("\r\n");
         }
         
         Field[] fields = clazz.getFields();
         for (Field field : fields) {
-            processField(
-                args, _args, layer, builder, field.getName(),
-                () -> ReflectHelper.getValue(field, obj), visitedKvs
-            );
+            processField(layer, builder, visitedKvs, new RealField(obj, field));
         }
         
         Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
-            if (method.getParameters().length == 0 && method.getName().startsWith("get") && method.getName().length() > 3) {
-                String fieldName = method.getName().substring(3);
-                fieldName = StringHelper.firstLower(fieldName);
-                
-                processField(
-                    args, _args, layer, builder, fieldName,
-                    () -> ReflectHelper.getter(method, obj), visitedKvs
-                );
-            }
+            processField(layer, builder, visitedKvs, new MethodField(obj, method));
         }
         
-        if (_args == null || _args.expand) {
+        if (expand) {
             for (int i = 0; i < layer; ++i) {
                 builder.append("\t");
             }
         }
         builder.append("}");
+        
         return builder.toString();
     }
     
-    private static <T> String processKeyValue(PrintArgs[] args, int layer, boolean fromIterable, int length,
+    private static String processNull(int layer, boolean arrayElement) {
+        if (arrayElement) {
+            StringBuilder _builder = new StringBuilder();
+            for (int i = 0; i < layer; ++i) {
+                _builder.append("\t");
+            }
+            _builder.append("null");
+            return _builder.toString();
+        }
+        return "null";
+    }
+    
+    private static <T> String processKeyValue(int layer, boolean fromIterable, int length,
                                               Iterable<T> iterable, Function<T, Object> getter,
                                               Map<Object, Boolean> visitedKvs) {
         StringBuilder builder = new StringBuilder();
@@ -170,9 +150,9 @@ public class PrintHelper {
                 builder.append("\t");
             }
             builder.append("{ ");
-            builder.append(ToString(key, layer + 1, false, args, true, visitedKvs));
+            builder.append(ToString(key, layer + 1, false, true, visitedKvs));
             builder.append(", ");
-            builder.append(ToString(getter.apply(key), layer + 1, false, args, true, visitedKvs));
+            builder.append(ToString(getter.apply(key), layer + 1, false, true, visitedKvs));
             builder.append("},");
             
             if (expand) {
@@ -190,7 +170,7 @@ public class PrintHelper {
         return builder.toString();
     }
     
-    private static String processIterable(PrintArgs[] args, int layer, boolean fromIterable, int length,
+    private static String processIterable(int layer, boolean fromIterable, int length,
                                           Function<Integer, Object> getter, Map<Object, Boolean> visitedKvs) {
         StringBuilder builder = new StringBuilder();
         
@@ -216,7 +196,7 @@ public class PrintHelper {
         }
         
         for (int i = 0; i < length; ++i) {
-            builder.append(ToString(getter.apply(i), layer + 1, true, args, true, visitedKvs));
+            builder.append(ToString(getter.apply(i), layer + 1, true, true, visitedKvs));
             builder.append(", ");
             
             if (expand) {
@@ -234,38 +214,28 @@ public class PrintHelper {
         return builder.toString();
     }
     
-    private static void processField(PrintArgs[] args, PrintArgs _args, int layer, StringBuilder builder,
-                                     String fieldName, Getter getter, Map<Object, Boolean> visitedKvs) {
-        PrintArgs.Item _item = null;
-        if (_args != null && _args.items != null) {
-            for (PrintArgs.Item temp : _args.items) {
-                if (Objects.equals(temp.name, fieldName)) {
-                    _item = temp;
-                }
-            }
-        }
-        
-        if (_item != null && _item.ignore) {
+    private static void processField(int layer, StringBuilder builder, Map<Object, Boolean> visitedKvs, IField field) {
+        if (field.ignore()) {
             return;
         }
         
-        if (_args == null || _args.expand) {
+        if (field.expand()) {
             for (int i = 0; i <= layer; ++i) {
                 builder.append("\t");
             }
         }
         
-        builder.append(fieldName);
+        builder.append(field.name());
         builder.append(" = ");
         
         try {
-            builder.append(ToString(getter.get(), layer + 1, false, args, false, visitedKvs));
+            builder.append(ToString(field.value(), layer + 1, false, false, visitedKvs));
         } catch (Exception e) {
             logger.error("invoke getter failed", e);
         }
         builder.append(", ");
         
-        if (_args == null || _args.expand) {
+        if (field.expand()) {
             builder.append("\r\n");
         }
     }
