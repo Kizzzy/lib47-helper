@@ -3,7 +3,7 @@ package cn.kizzzy.helper;
 import java.util.LinkedList;
 import java.util.List;
 
-public class NumberHelper {
+public class MathHelper {
     
     /**
      * 判断整数n是否为偶数
@@ -109,7 +109,7 @@ public class NumberHelper {
      * 任意一个
      */
     public static boolean any(int val, int... expects) {
-        if (expects != null && expects.length > 0) {
+        if (expects != null) {
             for (int expect : expects) {
                 if (val == expect) {
                     return true;
@@ -123,7 +123,7 @@ public class NumberHelper {
      * 皆不符合
      */
     public static boolean none(int val, int... expects) {
-        if (expects != null && expects.length > 0) {
+        if (expects != null) {
             for (int expect : expects) {
                 if (val == expect) {
                     return false;
@@ -137,7 +137,7 @@ public class NumberHelper {
      * 符合所有值
      */
     public static boolean all(int val, int... expects) {
-        if (expects != null && expects.length > 0) {
+        if (expects != null) {
             for (int expect : expects) {
                 if (val != expect) {
                     return false;
@@ -176,5 +176,37 @@ public class NumberHelper {
             return (long) (Math.pow(2, 32) + value);
         }
         return value;
+    }
+    
+    public static boolean is_power_of(int num, int base) {
+        if (base <= 1 || num < 1) {
+            return false;
+        }
+        
+        while (num % base == 0) {
+            num = num / base;
+        }
+        
+        return num == 1;
+    }
+    
+    public static double clamp01(double val) {
+        return clamp(val, 0, 1);
+    }
+    
+    public static double clamp(double val, double min, double max) {
+        if (min > max) {
+            double temp = max;
+            max = min;
+            min = temp;
+        }
+        
+        if (val < min) {
+            return min;
+        }
+        if (val > max) {
+            return max;
+        }
+        return val;
     }
 }
