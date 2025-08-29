@@ -190,13 +190,13 @@ public class MathHelper {
         return num == 1;
     }
     
-    public static double clamp01(double val) {
+    public static float clamp01(float val) {
         return clamp(val, 0, 1);
     }
     
-    public static double clamp(double val, double min, double max) {
+    public static float clamp(float val, float min, float max) {
         if (min > max) {
-            double temp = max;
+            float temp = max;
             max = min;
             min = temp;
         }
