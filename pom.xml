@@ -17,8 +17,10 @@
         <lib47-version>1.0-SNAPSHOT</lib47-version>
         <maven-compiler-plugin-version>3.5.1</maven-compiler-plugin-version>
         
-        <junit.version>4.13.2</junit.version>
         <slf4j.version>1.7.36</slf4j.version>
+        <log4j.version>2.17.2</log4j.version>
+        
+        <junit.version>4.13.2</junit.version>
     </properties>
     
     <dependencies>
@@ -29,16 +31,25 @@
             <version>${slf4j.version}</version>
         </dependency>
         
+        <!-- SLF4J 对 Log4j2 的桥接 -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
         
+        <!-- Log4j2 核心 -->
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        
+        <!-- Log4j2 API -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
         
         <dependency>

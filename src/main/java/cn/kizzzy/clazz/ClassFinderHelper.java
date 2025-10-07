@@ -79,18 +79,25 @@ public class ClassFinderHelper {
     }
     
     public static List<Class<?>> find(ClassLoader loader, ClassFilter filter) {
+        StringBuilder builder = new StringBuilder();
+        
         List<Class<?>> list = new ArrayList<>();
         try {
             String path = filter.packageRoot().replaceAll("\\.", "/");
             Enumeration<URL> urls = loader.getResources(path);
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
-                logger.debug("url: {}", url);
+                builder.append("find class at: ").append(url).append("\r\n");
                 
                 list.addAll(getClassFinder(url).find(url, filter));
             }
         } catch (IOException | ClassNotFoundException e) {
             logger.error("find class failed", e);
+        } finally {
+            for (Class<?> clazz : list) {
+                builder.append("class found: ").append(clazz.getName()).append("\r\n");
+            }
+            logger.info(builder.toString());
         }
         return list;
     }

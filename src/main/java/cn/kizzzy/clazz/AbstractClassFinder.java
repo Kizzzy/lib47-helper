@@ -12,7 +12,6 @@ public abstract class AbstractClassFinder implements ClassFinder {
     protected void loadClass(List<Class<?>> list, String name, ClassFilter filter) throws ClassNotFoundException {
         Class<?> clazz = Class.forName(name);
         if (filter.accept(clazz)) {
-            logger.debug("accepted class: {}", clazz);
             list.add(clazz);
         }
     }

@@ -5,7 +5,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractState<StateType, Entity> implements State<StateType, Entity> {
     
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractState.class);
+    protected static final Logger logger
+        = LoggerFactory.getLogger(AbstractState.class);
     
     protected final StateType stateType;
     
@@ -29,13 +30,13 @@ public abstract class AbstractState<StateType, Entity> implements State<StateTyp
     
     @Override
     public void enter(Entity entity) {
-        logger.info("========== enter {} state ==========", stateType);
+        // logger.debug("========== enter {} state ==========", stateType);
         
         this.enterTime = System.currentTimeMillis();
     }
     
     @Override
     public void exit(Entity entity) {
-        logger.info("========== enter {} state ==========", stateType);
+        // logger.debug("========== exit {} state ==========", stateType);
     }
 }
